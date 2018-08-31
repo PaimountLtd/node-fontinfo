@@ -85,5 +85,4 @@ NAN_MODULE_INIT(init_module) {
 
 }
 
-const char *module_name = "node-fontinfo";
-NODE_MODULE(module_name, fontinfo::init_module)
+NODE_MODULE(node_fontinfo, fontinfo::init_module)
