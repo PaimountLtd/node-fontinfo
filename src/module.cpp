@@ -15,74 +15,79 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <nan.h>
+#include <napi.h>
 #include <cstdio>
 #include "fontinfo/fontinfo.h"
 #include "fontinfo/endian.h"
 
-namespace fontinfo {
+using namespace Napi;
 
 namespace {
 
-v8::Local<v8::String> StringFromFontString(font_info_string *name)
+String StringFromFontString(Env env, font_info_string *name)
 {
-	int buffer_length = name->length / 2;
-	uint16_t *buffer = new uint16_t[buffer_length];
+	char16_t *buffer = new char16_t[name->length];
 	memcpy(buffer, name->buffer, name->length);
 
 	/* Flip from BE to host order */
-	for (int i = 0; i < name->length / 2; ++i) {
-		buffer[i] = be16toh(((uint16_t*)name->buffer)[i]);
+	char16_t *end_iter = (char16_t*)&name->buffer[name->length];
+	char16_t *buffer_iter = buffer;
+
+	for (char16_t *iter = (char16_t*)name->buffer; iter != end_iter; ++iter) {
+		*buffer_iter = be16toh(iter[0]);
+
+		++buffer_iter;
 	}
 
-	v8::Local<v8::String> result =
-		Nan::New<v8::String>(buffer, buffer_length).ToLocalChecked();
+	String result = String::New(env, buffer, name->length);
 
 	delete[] buffer;
 
 	return result;
 }
 
-void SetByString(v8::Local<v8::Object> object, const char* key, v8::Local<v8::Value> value)
+static Value getFontInfo(const CallbackInfo& info)
 {
-	Nan::Set(object, Nan::New<v8::String>(key).ToLocalChecked(), value);
-}
+	Env env = info.Env();
+	std::string filepath(info[0].As<String>());
 
-}
-
-NAN_METHOD(getFontInfo) {
-	/* I can't wait for N-API */
-	if (!info[0]->IsString()) {
-		Nan::ThrowTypeError("getFontInfo: Argument 1 - expected string");
-		return;
-	}
-
-	Nan::Utf8String filepath(info[0]);
-
-	font_info *f_info = font_info_create(*filepath);
+	font_info *f_info = font_info_create(filepath.c_str());
 
 	if (!f_info) {
-		fprintf(stderr, "node-fontinfo: Failed to fetch font info\n");
-		info.GetReturnValue().Set(Nan::Null());
-		return;
+		throw Error::New(env, "node-fontinfo: Failed to fetch font info\n");
 	}
 
 	/* We now have UTF16 and the size of the buffer, let V8 deal with the rest */
-	v8::Local<v8::Object> result = Nan::New<v8::Object>();
-	SetByString(result, "family_name", StringFromFontString(&f_info->family_name));
-	SetByString(result, "subfamily_name", StringFromFontString(&f_info->subfamily_name));
-	SetByString(result, "italic", Nan::New<v8::Boolean>(f_info->italic));
-	SetByString(result, "bold", Nan::New<v8::Boolean>(f_info->bold));
+	Object result = Object::New(env);
+
+	result.Set(
+		"family_name",
+		StringFromFontString(env, &f_info->family_name)
+	);
+
+	result.Set(
+		"subfamily_name",
+		StringFromFontString(env, &f_info->subfamily_name)
+	);
+
+	result.Set("italic", f_info->italic);
+	result.Set("bold", f_info->bold);
 
 	font_info_destroy(f_info);
 
-	info.GetReturnValue().Set(result);
-}
-
-NAN_MODULE_INIT(init_module) {
-	NAN_EXPORT(target, getFontInfo);
+	return result;
 }
 
 }
 
-NODE_MODULE(node_fontinfo, fontinfo::init_module)
+Object Init(Env env, Object exports)
+{
+	exports.Set(
+		"getFontInfo",
+		Napi::Function::New(env, getFontInfo)
+	);
+
+	return exports;
+}
+
+NODE_API_MODULE(node_fontinfo, Init)

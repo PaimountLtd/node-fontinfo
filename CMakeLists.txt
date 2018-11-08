@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(node_fontinfo)
 
@@ -42,12 +42,27 @@ target_link_libraries(fontinfo
 add_dependencies(fontinfo freetype2)
 
 add_nodejs_module(node_fontinfo "src/module.cpp")
-target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
-target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
+
+target_include_directories(
+	node_fontinfo
+	PRIVATE ${node_fontinfo_SOURCE_DIR}/node_modules/node-addon-api
+)
+
+target_link_libraries(node_fontinfo fontinfo)
 
 if (WIN32)
-	target_compile_definitions(node_fontinfo PRIVATE -DUNICODE -D_UNICODE)
+	target_compile_definitions(node_fontinfo
+		PRIVATE
+		-DUNICODE
+		-D_UNICODE
+		-D_WIN32_WINNT=0x0601
+		-DWINVER=0x0601
+		-DWIN32_LEAN_AND_MEAN
+		-DNOMINMAX
+	)
 endif ()
+
+set(FONTINFO_BUILD_TESTS ON CACHE BOOL "Whether to build tests")
 
 if(FONTINFO_BUILD_TESTS)
 	add_executable(simple_test "test/simple_test.c")

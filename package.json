@@ -12,10 +12,9 @@
 	],
 	"files": [
 		"node_fontinfo.node",
-		"node_fontinfo.pdb",
-		"main.js"
+		"node_fontinfo.pdb"
 	],
 	"devDependencies": {
-		"nan": "2.10.0"
+		"node-addon-api": "^1.5.0"
 	}
 }
