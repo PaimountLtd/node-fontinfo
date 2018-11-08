@@ -32,7 +32,7 @@ void print_name(struct font_info_string *name, const char *message)
 	memcpy(buffer, name->buffer, name->length);
 
 	/* Flip from BE to host order */
-	uint16_t *end_iter = &name->buffer[name->length];
+	uint16_t *end_iter = (uint16_t*)&name->buffer[name->length];
 	uint16_t *buffer_iter = buffer;
 
 	for (uint16_t *iter = (uint16_t*)name->buffer; iter != end_iter; ++iter) {
