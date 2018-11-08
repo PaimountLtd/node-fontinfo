@@ -18,33 +18,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <fontinfo/fontinfo.h>
 #include <fontinfo/endian.h>
 
 void print_name(struct font_info_string *name, const char *message)
 {
 	/* The freetype string is UTF-16BE encoded */
-	
-	/* We're not guaranteed to control the memory 
-	 * so make a copy instead. */
-	wchar_t *buffer = malloc(name->length);
-	int buffer_length = name->length / 2;
+
+	/* We're not guaranteed to control
+	 * the memory so make a copy instead. */
+	uint16_t *buffer = malloc(sizeof(uint16_t) * name->length);
 	memcpy(buffer, name->buffer, name->length);
-	
+
 	/* Flip from BE to host order */
-	for (int i = 0; i < name->length / 2; ++i) {
-		buffer[i] = be16toh(((unsigned short*)name->buffer)[i]);
+	uint16_t *end_iter = &name->buffer[name->length];
+	uint16_t *buffer_iter = buffer;
+
+	for (uint16_t *iter = (uint16_t*)name->buffer; iter != end_iter; ++iter) {
+		*buffer_iter = be16toh(iter[0]);
+
+		++buffer_iter;
 	}
-	
-	printf("%s: %.*ls\n", message, buffer_length, buffer);
-	
+
+	printf("%s (%u): %.*ls\n", message, name->length, name->length, buffer);
+
 	free(buffer);
 }
 
 int main(void)
 {
-	const char *font_path = "./ZillaSlab Highlight-Regular.ttf";
-	
+	const char *font_path = "./ZillaSlabHighlight-Regular.ttf";
+
 	struct font_info *info =
 		font_info_create(font_path);
 
@@ -52,9 +57,9 @@ int main(void)
 		fprintf(stderr, "Failed to fetch font info for %s\n", font_path);
 		return;
 	}
-	
+
 	print_name(&info->family_name, "Font Family Name");
 	print_name(&info->subfamily_name, "Font Subfamily Name");
-	
+
 	font_info_destroy(info);
 }
