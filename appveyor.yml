@@ -2,7 +2,7 @@ image:
   - Visual Studio 2017
 
 environment:
-  NodeVersion: 9
+  NodeVersion: 8
   BuildDirectory: build
   Generator: Visual Studio 15 2017 Win64
   DistributeDirectory: distribute
