@@ -65,7 +65,7 @@ endif ()
 set(FONTINFO_BUILD_TESTS ON CACHE BOOL "Whether to build tests")
 
 if(FONTINFO_BUILD_TESTS)
-	add_executable(simple_test "test/simple_test.c")
+	add_executable(simple_test "test/simple_test.cpp")
 	target_link_libraries(simple_test fontinfo)
 	target_include_directories(simple_test PUBLIC "src")
 endif()

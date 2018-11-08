@@ -15,19 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <napi.h>
-#include <cstdio>
-#include "fontinfo/fontinfo.h"
-#include "fontinfo/endian.h"
-
-#ifdef _WIN32
+#include <string>
+#include <codecvt>
 #include <windows.h>
-#endif
+#include <fontinfo/fontinfo.h>
+#include <fontinfo/endian.h>
 
-using namespace Napi;
-
-namespace {
-
+/* Once upon a time, I tried to use C++ standard mechanisms for this
+ * but VC++ incorrectly implemented wstring_convert so fuck me I guess */
 #ifdef _WIN32
 
 std::string utf16_to_utf8(char *buffer, size_t buffer_length)
@@ -61,8 +56,12 @@ std::string utf16_to_utf8(char *buffer, size_t buffer_length)
 	#error Not using Windows? Well too bad I guess. I haven't implemented POSIX yet.
 #endif
 
-String StringFromFontString(Env env, font_info_string *name)
+void print_name(struct font_info_string *name, const char *message)
 {
+	/* The freetype string is UTF-16BE encoded */
+
+	/* We're not guaranteed to control
+	 * the memory so make a copy instead. */
 	char *buffer = new char[name->length];
 	memcpy(buffer, name->buffer, name->length);
 
@@ -76,55 +75,29 @@ String StringFromFontString(Env env, font_info_string *name)
 
 	std::string converted(utf16_to_utf8(buffer, name->length));
 
-	String result = String::New(env, converted);
+	printf("%s (%u): %s\n", message, name->length, converted.c_str());
 
-	delete[] buffer;
-
-	return result;
+	delete [] buffer;
 }
 
-static Value getFontInfo(const CallbackInfo& info)
+int main(int argc, char *argv[])
 {
-	Env env = info.Env();
-	std::string filepath(info[0].As<String>());
-
-	font_info *f_info = font_info_create(filepath.c_str());
-
-	if (!f_info) {
-		throw Error::New(env, "node-fontinfo: Failed to fetch font info\n");
+	if (argc < 2) {
+		printf("Usage: %s <font_path>", argv[0]);
+		return 1;
 	}
 
-	/* We now have UTF16 and the size of the buffer, let V8 deal with the rest */
-	Object result = Object::New(env);
+	struct font_info *info = font_info_create(argv[1]);
 
-	result.Set(
-		"family_name",
-		StringFromFontString(env, &f_info->family_name)
-	);
+	if (!info) {
+		fprintf(stderr, "Failed to fetch font info for %s\n", argv[0]);
+		return 1;
+	}
 
-	result.Set(
-		"subfamily_name",
-		StringFromFontString(env, &f_info->subfamily_name)
-	);
+	print_name(&info->family_name, "Font Family Name");
+	print_name(&info->subfamily_name, "Font Subfamily Name");
 
-	result.Set("italic", f_info->italic);
-	result.Set("bold", f_info->bold);
+	font_info_destroy(info);
 
-	font_info_destroy(f_info);
-
-	return result;
+	return 0;
 }
-
-}
-
-Object Init(Env env, Object exports)
-{
-	exports.Set(
-		"getFontInfo",
-		Napi::Function::New(env, getFontInfo)
-	);
-
-	return exports;
-}
-
-NODE_API_MODULE(node_fontinfo, Init)
