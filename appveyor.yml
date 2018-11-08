@@ -2,15 +2,21 @@ image:
   - Visual Studio 2017
 
 environment:
+  matrix:
+    - BuildArch: x64
+      Generator: Visual Studio 15 2017 Win64
+
+    - BuildArch: x86
+      Generator: Visual Studio 15 2017
+
   NodeVersion: 8
   BuildDirectory: build
-  Generator: Visual Studio 15 2017 Win64
   DistributeDirectory: distribute
   FullDistributePath: $(SLBuildDirectory)\$(SLDistributeDirectory)
-  DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-node-fontinfo
+  DistributionAritfact: node-fontinfo-$(BuildArch)-$(APPVEYOR_BUILD_VERSION)
 
 install:
-  - ps: Install-Product node $env:NodeVersion x64
+  - ps: Install-Product node $env:NodeVersion $env:BuildArch
   - npm install
 
 build_script:
