@@ -5,6 +5,10 @@ project(node_fontinfo)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(freetype2_INSTALL ${CMAKE_BINARY_DIR}/freetype2)
 
+SET(NODEJS_URL "https://atom.io/download/atom-shell" CACHE STRING "Node.JS URL")
+SET(NODEJS_NAME "iojs" CACHE STRING "Node.JS Name")
+SET(NODEJS_VERSION "v4.1.4" CACHE STRING "Node.JS Version")
+
 include(NodeJS)
 include(ExternalProject)
 
