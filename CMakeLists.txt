@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 project(node_fontinfo)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(freetype2_INSTALL ${CMAKE_BINARY_DIR}/freetype2)
 
 include(NodeJS)
@@ -44,6 +44,10 @@ add_dependencies(fontinfo freetype2)
 add_nodejs_module(node_fontinfo "src/module.cpp")
 target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
 target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
+
+if (WIN32)
+	target_compile_definitions(node_fontinfo PRIVATE -DUNICODE -D_UNICODE)
+endif ()
 
 if(FONTINFO_BUILD_TESTS)
 	add_executable(simple_test "test/simple_test.c")
