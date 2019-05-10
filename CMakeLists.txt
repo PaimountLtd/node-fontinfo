@@ -7,7 +7,11 @@ set(freetype2_INSTALL ${CMAKE_BINARY_DIR}/freetype2)
 
 SET(NODEJS_URL "https://atom.io/download/atom-shell" CACHE STRING "Node.JS URL")
 SET(NODEJS_NAME "iojs" CACHE STRING "Node.JS Name")
+<<<<<<< HEAD
 SET(NODEJS_VERSION "v5.0.4" CACHE STRING "Node.JS Version")
+=======
+SET(NODEJS_VERSION "v5.0.1" CACHE STRING "Node.JS Version")
+>>>>>>> move to 5.0.1
 
 include(NodeJS)
 include(ExternalProject)
