@@ -1,6 +1,6 @@
 {
 	"name": "node-fontinfo",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "Native Node.js addon to fetch font info using freetype",
 	"license": "GPL-2.0+",
 	"main": "main.js",
@@ -16,6 +16,6 @@
 		"main.js"
 	],
 	"devDependencies": {
-		"nan": "2.12.1"
+		"nan": "2.14.0"
 	}
 }
