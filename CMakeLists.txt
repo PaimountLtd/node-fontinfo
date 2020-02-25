@@ -29,6 +29,8 @@ set(freetype2_DEBUG_LIBRARY
 set(freetype2_RELEASE_LIBRARY
 	${freetype2_INSTALL}/lib/freetype${CMAKE_STATIC_LIBRARY_SUFFIX})
 ELSEIF(APPLE)
+set(freetype2_DEBUG_LIBRARY
+	${freetype2_INSTALL}/lib/libfreetype${CMAKE_STATIC_LIBRARY_SUFFIX})
 set(freetype2_RELEASE_LIBRARY
 	${freetype2_INSTALL}/lib/libfreetype${CMAKE_STATIC_LIBRARY_SUFFIX})
 ENDIF()
