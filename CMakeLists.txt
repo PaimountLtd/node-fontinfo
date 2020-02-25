@@ -22,11 +22,16 @@ ExternalProject_Add(
 )
 
 set(freetype2_INCLUDE_DIRS ${freetype2_INSTALL}/include/freetype2)
+IF(WIN32)
 set(freetype2_DEBUG_LIBRARY
 	${freetype2_INSTALL}/lib/freetyped${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 set(freetype2_RELEASE_LIBRARY
 	${freetype2_INSTALL}/lib/freetype${CMAKE_STATIC_LIBRARY_SUFFIX})
+ELSEIF(APPLE)
+set(freetype2_RELEASE_LIBRARY
+	${freetype2_INSTALL}/lib/libfreetype${CMAKE_STATIC_LIBRARY_SUFFIX})
+ENDIF()
 
 set(fontinfo_SOURCES
 	src/fontinfo/fontinfo.c)
@@ -48,10 +53,10 @@ add_dependencies(fontinfo freetype2)
 IF(WIN32)
 	add_nodejs_module(node_fontinfo "src/module.cpp")
 ELSEIF(APPLE)
-	add_nodejs_module(node_fontinfo STATIC ${fontinfo_SOURCES} "src/module.cpp")
+	add_nodejs_module(node_fontinfo "src/module.cpp")
 ENDIF()
 
-target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
+target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
 target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
 
 if (WIN32)
