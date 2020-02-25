@@ -50,11 +50,7 @@ target_link_libraries(fontinfo
 
 add_dependencies(fontinfo freetype2)
 
-IF(WIN32)
-	add_nodejs_module(node_fontinfo "src/module.cpp")
-ELSEIF(APPLE)
-	add_nodejs_module(node_fontinfo "src/module.cpp")
-ENDIF()
+add_nodejs_module(node_fontinfo "src/module.cpp")
 
 target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
 target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
