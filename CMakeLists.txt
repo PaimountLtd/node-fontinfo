@@ -54,7 +54,12 @@ add_dependencies(fontinfo freetype2)
 
 add_nodejs_module(node_fontinfo "src/module.cpp")
 
-target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
+if (WIN32)
+	target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
+else ()
+	target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
+endif ()
+
 target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
 
 if (WIN32)
