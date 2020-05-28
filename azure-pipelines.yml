@@ -8,7 +8,7 @@ trigger:
 
 variables:
   BuildDirectory: build
-  Generator: Visual Studio 15 2017 Win64
+  Generator: Visual Studio 16 2019
   DistributeDirectory: distribute
   FullDistributePath: $(BuildDirectory)\$(DistributeDirectory)
   DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-node-fontinfo
@@ -19,7 +19,7 @@ variables:
 jobs:
 - job: 'Windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
   workspace:
     clean: all
 
