@@ -22,11 +22,18 @@ ExternalProject_Add(
 )
 
 set(freetype2_INCLUDE_DIRS ${freetype2_INSTALL}/include/freetype2)
+IF(WIN32)
 set(freetype2_DEBUG_LIBRARY
 	${freetype2_INSTALL}/lib/freetyped${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 set(freetype2_RELEASE_LIBRARY
 	${freetype2_INSTALL}/lib/freetype${CMAKE_STATIC_LIBRARY_SUFFIX})
+ELSEIF(APPLE)
+set(freetype2_DEBUG_LIBRARY
+	${freetype2_INSTALL}/lib/libfreetype${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(freetype2_RELEASE_LIBRARY
+	${freetype2_INSTALL}/lib/libfreetype${CMAKE_STATIC_LIBRARY_SUFFIX})
+ENDIF()
 
 set(fontinfo_SOURCES
 	src/fontinfo/fontinfo.c)
@@ -46,7 +53,13 @@ target_link_libraries(fontinfo
 add_dependencies(fontinfo freetype2)
 
 add_nodejs_module(node_fontinfo "src/module.cpp")
-target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
+
+if (WIN32)
+	target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES})
+else ()
+	target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
+endif ()
+
 target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
 
 if (WIN32)
@@ -59,7 +72,10 @@ if(FONTINFO_BUILD_TESTS)
 	target_include_directories(simple_test PUBLIC "src")
 endif()
 
-install(FILES $<TARGET_PDB_FILE:node_fontinfo> DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
+IF(WIN32)
+	install(FILES $<TARGET_PDB_FILE:node_fontinfo> DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
+ENDIF()
+
 install(FILES $<TARGET_FILE:node_fontinfo> DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 install(
