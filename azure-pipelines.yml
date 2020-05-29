@@ -26,7 +26,6 @@ jobs:
   steps:
   - powershell: |
       Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git.exe describe --tags --abbrev=0) | Out-String)"
-      'git config --global core.autocrlf false'
     displayName: 'Set Unix checkout for git'
 
   - checkout: self
