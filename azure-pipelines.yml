@@ -66,7 +66,7 @@ jobs:
     inputs:
       awsCredentials: 'SLOBS_BE_AWS'
       regionName: 'us-west-2'
-      bucketName: 'slobs-node-fontinfo.streamlabs.com'
+      bucketName: 'slobs-node-fontinfo'
       globExpressions: '$(tagartifact)-win64.tar.gz'
       filesAcl: 'public-read'
     displayName: 'Upload tag artifact to S3'
