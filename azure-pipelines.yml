@@ -24,7 +24,7 @@ jobs:
     clean: all
 
   steps:
-  - powershell: 'Write-Host "##vso[task.setvariable variable=tag]$((git.exe describe --tags --abbrev=0) | Out-String)"'
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git.exe describe --tags --abbrev=0) | Out-String)"'
     displayName: 'Get tag for artifact'
 
   - powershell: git config --global core.autocrlf false
