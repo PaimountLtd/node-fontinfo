@@ -79,11 +79,11 @@ jobs:
     clean: all
 
   steps:
-  - powershell: git config --global core.autocrlf false
-    displayName: 'Set Unix checkout for git'
-
   - checkout: self
     fetchDepth: 10
+
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git describe --tags --abbrev=0) | Out-String)"'
+    displayName: 'Get tag for artifact'
 
   - task: NodeTool@0
     displayName: 'Install Node'
@@ -103,18 +103,20 @@ jobs:
       includeRootFolder: true
       archiveType: tar
       tarCompression: gz
-      archiveFile: '$(DistributionAritfact)-osx.tar.gz'
+      archiveFile: '$(tagartifact)-osx.tar.gz'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish build artifact'
     inputs: 
-      pathtoPublish: $(Build.SourcesDirectory)/$(DistributionAritfact)-osx.tar.gz
-      artifactName: $(DistributionAritfact)-osx.tar.gz
+      pathtoPublish: $(Build.SourcesDirectory)/$(tagartifact)-osx.tar.gz
+      artifactName: $(tagartifact)-osx.tar.gz
 
-  - task: GithubRelease@0 
-    displayName: 'Deploy to GitHub'
-    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))  
+  - task: S3Upload@1
     inputs:
-      gitHubConnection: SLOBS_BE_DEPLOY
-      repositoryName: stream-labs/node-fontinfo
-      assets: $(Build.SourcesDirectory)/$(DistributionAritfact)-osx.tar.gz
+      awsCredentials: 'SLOBS_BE_AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-node-fontinfo'
+      globExpressions: '$(tagartifact)-win64.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
