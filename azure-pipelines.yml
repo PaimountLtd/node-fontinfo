@@ -27,9 +27,6 @@ jobs:
   - checkout: self
     fetchDepth: 10
 
-  - powershell: git status
-    displayName: 'Use git cmd'
-
   - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git.exe describe --tags --abbrev=0) | Out-String)"'
     displayName: 'Get tag for artifact'
 
@@ -62,16 +59,18 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish build artifact'
     inputs: 
-      pathtoPublish: $(Build.SourcesDirectory)\$(DistributionAritfact).tar.gz
-      artifactName: $(DistributionAritfact).tar.gz
+      pathtoPublish: $(Build.SourcesDirectory)\$(tagartifact)-win64.tar.gz
+      artifactName: $(tagartifact)-win64.tar.gz
 
-  - task: GithubRelease@0 
-    displayName: 'Deploy to GitHub'
-    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))  
+  - task: S3Upload@1
     inputs:
-      gitHubConnection: SLOBS_BE_DEPLOY
-      repositoryName: stream-labs/node-fontinfo
-      assets: $(Build.SourcesDirectory)/$(DistributionAritfact).tar.gz
+      awsCredentials: 'Streamlabs AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-node-fontinfo.streamlabs.com'
+      globExpressions: '$(tagartifact)-win64.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
 
 - job: 'MacOSX'
   pool:
