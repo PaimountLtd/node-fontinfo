@@ -24,6 +24,9 @@ jobs:
     clean: all
 
   steps:
+  - checkout: self
+    fetchDepth: 10
+
   - powershell: git status
     displayName: 'Use git cmd'
 
@@ -32,9 +35,6 @@ jobs:
 
   - powershell: git config --global core.autocrlf false
     displayName: 'Set Unix checkout for git'
-
-  - checkout: self
-    fetchDepth: 10
 
   - task: NodeTool@0
     displayName: 'Install Node'
