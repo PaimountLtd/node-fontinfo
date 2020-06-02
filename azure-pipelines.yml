@@ -24,8 +24,8 @@ jobs:
     clean: all
 
   steps:
-  - powershell: 'git.exe status'
-    displayName: 'Get tag for artifact'
+  - powershell: 'git status'
+    displayName: 'Use git cmd'
 
   - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git.exe describe --tags --abbrev=0) | Out-String)"'
     displayName: 'Get tag for artifact'
