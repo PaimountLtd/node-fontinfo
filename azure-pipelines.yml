@@ -4,7 +4,7 @@ trigger:
       - streamlabs
   tags:
     include:
-      - *
+      - '*'
 
 variables:
   BuildDirectory: build
