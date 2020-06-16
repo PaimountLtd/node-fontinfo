@@ -85,4 +85,4 @@ NAN_MODULE_INIT(init_module) {
 
 }
 
-NODE_MODULE(node_fontinfo, fontinfo::init_module)
+NAN_MODULE_WORKER_ENABLED(node_fontinfo, fontinfo::init_module)

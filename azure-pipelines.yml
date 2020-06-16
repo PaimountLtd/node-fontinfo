@@ -14,7 +14,7 @@ variables:
   DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-node-fontinfo
   RuntimeURL: https://atom.io/download/atom-shell
   RuntimeName: iojs
-  RuntimeVersion: v6.0.3
+  RuntimeVersion: v9.0.4
 
 jobs:
 - job: 'Windows'
