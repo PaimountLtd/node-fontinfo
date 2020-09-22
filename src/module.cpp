@@ -15,74 +15,72 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <nan.h>
+#include <napi.h>
 #include <cstdio>
 #include "fontinfo/fontinfo.h"
 #include "fontinfo/endian.h"
 
-namespace fontinfo {
-
-namespace {
-
-v8::Local<v8::String> StringFromFontString(font_info_string *name)
+Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 {
-	int buffer_length = name->length / 2;
-	uint16_t *buffer = new uint16_t[buffer_length];
-	memcpy(buffer, name->buffer, name->length);
+	//int buffer_length = name->length / 2;
+	//uint16_t *buffer = new uint16_t[buffer_length];
+	//memcpy(buffer, name->buffer, name->length);
 
-	/* Flip from BE to host order */
-	for (int i = 0; i < name->length / 2; ++i) {
-		buffer[i] = be16toh(((uint16_t*)name->buffer)[i]);
-	}
+	///* Flip from BE to host order */
+	//for (int i = 0; i < name->length / 2; ++i) {
+	//	buffer[i] = be16toh(((uint16_t*)name->buffer)[i]);
+	//}
 
-	v8::Local<v8::String> result =
-		Nan::New<v8::String>(buffer, buffer_length).ToLocalChecked();
+	// v8::Local<v8::String> result =
+	// 	Nan::New<v8::String>(buffer, buffer_length).ToLocalChecked();
 
-	delete[] buffer;
+	Napi::String result =
+		Napi::String::New(env, name->buffer);
+
+	//delete[] buffer;
 
 	return result;
 }
 
-void SetByString(v8::Local<v8::Object> object, const char* key, v8::Local<v8::Value> value)
+void SetByString(Napi::Object object, const char* key, Napi::Value value)
 {
-	Nan::Set(object, Nan::New<v8::String>(key).ToLocalChecked(), value);
+	object.Set(key, value);
 }
 
-}
-
-NAN_METHOD(getFontInfo) {
+Napi::Value getFontInfo(const Napi::CallbackInfo& info) {
 	/* I can't wait for N-API */
-	if (!info[0]->IsString()) {
-		Nan::ThrowTypeError("getFontInfo: Argument 1 - expected string");
-		return;
+	if (!info[0].IsString()) {
+		Napi::Error::New(info.Env(), Napi::String::New(info.Env(), "getFontInfo: Argument 1 - expected string"));
+		return info.Env().Undefined();
 	}
 
-	Nan::Utf8String filepath(info[0]);
+	//Nan::Utf8String filepath(info[0]);
+	Napi::String filepath = info[0].ToString();
 
-	font_info *f_info = font_info_create(*filepath);
+	font_info *f_info = font_info_create(filepath.Utf8Value().c_str());
 
 	if (!f_info) {
 		fprintf(stderr, "node-fontinfo: Failed to fetch font info\n");
-		info.GetReturnValue().Set(Nan::Null());
-		return;
+		return info.Env().Undefined();
 	}
 
-	/* We now have UTF16 and the size of the buffer, let V8 deal with the rest */
-	v8::Local<v8::Object> result = Nan::New<v8::Object>();
-	SetByString(result, "family_name", StringFromFontString(&f_info->family_name));
-	SetByString(result, "subfamily_name", StringFromFontString(&f_info->subfamily_name));
-	SetByString(result, "italic", Nan::New<v8::Boolean>(f_info->italic));
-	SetByString(result, "bold", Nan::New<v8::Boolean>(f_info->bold));
+	Napi::Object result = Napi::Object::New(info.Env());
+	
+	SetByString(result, "family_name", StringFromFontString(info.Env(), &f_info->family_name));
+	SetByString(result, "subfamily_name", StringFromFontString(info.Env(), &f_info->subfamily_name));
+	SetByString(result, "italic", Napi::Boolean::New(info.Env(), f_info->italic));
+	SetByString(result, "bold", Napi::Boolean::New(info.Env(), f_info->bold));
 
 	font_info_destroy(f_info);
 
-	info.GetReturnValue().Set(result);
+	return result;
 }
 
-NAN_MODULE_INIT(init_module) {
-	NAN_EXPORT(target, getFontInfo);
+Napi::Object main_node(Napi::Env env, Napi::Object exports) {
+	exports.Set(
+		Napi::String::New(env, "getFontInfo"),
+		Napi::Function::New(env, getFontInfo));
+    return exports;
 }
 
-}
-
-NODE_MODULE(node_fontinfo, fontinfo::init_module)
+NODE_API_MODULE(node_fontinfo, main_node)
