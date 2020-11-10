@@ -50,10 +50,12 @@ struct font_info *font_info_create(const char *path)
 
 		switch(name_info.name_id) {
 		case TT_NAME_ID_FONT_FAMILY:
-			ASSIGN_STRING(family_name)
+			if (strcmp(name_info.string, "") != 0)
+				ASSIGN_STRING(family_name)
 			break;
 		case TT_NAME_ID_FONT_SUBFAMILY:
-			ASSIGN_STRING(subfamily_name)
+			if (strcmp(name_info.string, "") != 0)
+				ASSIGN_STRING(subfamily_name)
 			break;
 		default:
 			continue;
