@@ -22,6 +22,9 @@
 
 Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 {
+	if (name->length == 0 || name->buffer == NULL)
+		return Napi::String::New(env, "");
+
 	int buffer_length = name->length / 2;
 	uint16_t *buffer = new uint16_t[buffer_length];
 	memcpy(buffer, name->buffer, name->length);
@@ -55,7 +58,13 @@ Napi::Value getFontInfo(const Napi::CallbackInfo& info) {
 	font_info *f_info = font_info_create(filepath.Utf8Value().c_str());
 
 	if (!f_info) {
-		fprintf(stderr, "node-fontinfo: Failed to fetch font info\n");
+		fprintf(stderr, "node-fontinfo: Failed to fetch font info %s\n", filepath.Utf8Value().c_str());
+		return info.Env().Undefined();
+	}
+
+	if (f_info->family_name.length == 0 || f_info->family_name.buffer == NULL) {
+		font_info_destroy(f_info);
+		fprintf(stderr, "node-fontinfo: font info for %s does not have a family name\n", filepath.Utf8Value().c_str());
 		return info.Env().Undefined();
 	}
 
