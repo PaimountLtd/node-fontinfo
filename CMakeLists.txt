@@ -19,7 +19,7 @@ nodejs_init()
 ExternalProject_Add(
 	freetype2
 	SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/freetype2
-	URL "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.9.tar.gz"
+	URL "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz"
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${freetype2_INSTALL}
 )
 
