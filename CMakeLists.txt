@@ -9,7 +9,7 @@ set(freetype2_INSTALL ${CMAKE_BINARY_DIR}/freetype2)
 
 SET(NODEJS_URL "https://atom.io/download/atom-shell" CACHE STRING "Node.JS URL")
 SET(NODEJS_NAME "iojs" CACHE STRING "Node.JS Name")
-SET(NODEJS_VERSION "v6.0.3" CACHE STRING "Node.JS Version")
+SET(NODEJS_VERSION "v9.3.3" CACHE STRING "Node.JS Version")
 
 include(NodeJS)
 include(ExternalProject)
@@ -54,6 +54,17 @@ target_link_libraries(fontinfo
 
 add_dependencies(fontinfo freetype2)
 
+# Include N-API wrappers
+execute_process(COMMAND node -p "require('node-addon-api').include"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE NODE_ADDON_API_DIR
+        )
+string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+
+# Define NAPI_VERSION
+add_definitions(-DNAPI_VERSION=4)
+
 add_nodejs_module(node_fontinfo "src/module.cpp")
 
 if (WIN32)
@@ -62,7 +73,7 @@ else ()
 	target_link_libraries(node_fontinfo fontinfo ${NODEJS_LIBRARIES} ${freetype2_DEBUG_LIBRARY})
 endif ()
 
-target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS})
+target_include_directories(node_fontinfo PUBLIC ${NODEJS_INCLUDE_DIRS} ${NODE_ADDON_API_DIR})
 
 if (WIN32)
 	target_compile_definitions(node_fontinfo PRIVATE -DUNICODE -D_UNICODE)
