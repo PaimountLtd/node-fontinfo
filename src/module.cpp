@@ -19,25 +19,36 @@
 #include <cstdio>
 #include "fontinfo/fontinfo.h"
 #include "fontinfo/endian.h"
+#include <codecvt>
 
 Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 {
 	if (name->length == 0 || name->buffer == NULL)
 		return Napi::String::New(env, "");
+	std::string name_string;
 
-	int buffer_length = name->length / 2;
-	uint16_t *buffer = new uint16_t[buffer_length];
-	memcpy(buffer, name->buffer, name->length);
+#if defined(WIN32)
+	int buffer_length = name->length/2;
+	char16_t* buffer = new char16_t[buffer_length];
 
 	/* Flip from BE to host order */
-	for (int i = 0; i < name->length / 2; ++i) {
+	for (int i = 0; i < buffer_length; ++i) {
 		buffer[i] = be16toh(((uint16_t*)name->buffer)[i]);
 	}
 
-	Napi::String result =
-		Napi::String::New(env, name->buffer, buffer_length);
-
+	std::wstring_convert<
+		std::codecvt<char16_t, char, std::mbstate_t>,
+		char16_t> convert;
+	std::u16string u16(buffer, buffer_length);
+	name_string = convert.to_bytes(u16);
+  
 	delete[] buffer;
+#endif
+#if defined(__APPLE__)
+	name_string = std::string(name->buffer, name->length)
+#endif
+	
+	Napi::String result = Napi::String::New(env, name_string.c_str(), name_string.size());
 
 	return result;
 }
