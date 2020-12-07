@@ -45,7 +45,7 @@ Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 	delete[] buffer;
 #endif
 #if defined(__APPLE__)
-	name_string = std::string(name->buffer, name->length)
+	name_string = std::string(name->buffer, name->length);
 #endif
 	
 	Napi::String result = Napi::String::New(env, name_string.c_str(), name_string.size());
