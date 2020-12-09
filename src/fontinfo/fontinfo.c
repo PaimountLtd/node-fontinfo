@@ -37,10 +37,6 @@ struct font_info *font_info_create(const char *path)
 
 	FT_UInt name_count = FT_Get_Sfnt_Name_Count(info->ft_face);
 
-	#define ASSIGN_STRING(member) \
-		external->member.buffer = name_info.string; \
-		external->member.length = name_info.string_len;
-
 	for (unsigned int i = 0; i < name_count; ++i) {
 		FT_SfntName name_info;
 
@@ -48,21 +44,28 @@ struct font_info *font_info_create(const char *path)
 
 		if (ft_error) continue;
 
-		switch(name_info.name_id) {
-		case TT_NAME_ID_FONT_FAMILY:
-			if (strcmp(name_info.string, "") != 0)
-				ASSIGN_STRING(family_name)
-			break;
-		case TT_NAME_ID_FONT_SUBFAMILY:
-			if (strcmp(name_info.string, "") != 0)
-				ASSIGN_STRING(subfamily_name)
-			break;
-		default:
-			continue;
+		//get font names only for current platform
+#if defined(__APPLE__)
+		if (name_info.platform_id == 1) {
+#elif defined(WIN32)
+		if (name_info.platform_id == 3) {
+#else
+		if (false) {
+#endif
+			switch (name_info.name_id) {
+			case TT_NAME_ID_FONT_FAMILY:
+				external->family_name.buffer = name_info.string;
+				external->family_name.length = name_info.string_len;
+				break;
+			case TT_NAME_ID_FONT_SUBFAMILY:
+				external->subfamily_name.buffer = name_info.string;
+				external->subfamily_name.length = name_info.string_len;
+				break;
+			default:
+				continue;
+			}
 		}
 	}
-
-	#undef ASSIGN_STRING
 
 	external->italic = info->ft_face->style_flags & FT_STYLE_FLAG_ITALIC;
 	external->bold   = info->ft_face->style_flags & FT_STYLE_FLAG_BOLD;
