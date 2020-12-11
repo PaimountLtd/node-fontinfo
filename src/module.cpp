@@ -42,7 +42,7 @@ Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 		buffer_u16[i] = be16toh(((uint16_t*)name->buffer)[i]);
 	}
 
-    	int buffer_utf8_len = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buffer_u16, buffer_length, NULL, 0, NULL, NULL);
+	int buffer_utf8_len = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buffer_u16, buffer_length, NULL, 0, NULL, NULL);
 	if (buffer_utf8_len > 0) {
 		char* buffer_utf8 = new char[buffer_utf8_len+1];
 
