@@ -19,30 +19,41 @@
 #include <cstdio>
 #include "fontinfo/fontinfo.h"
 #include "fontinfo/endian.h"
-#include <codecvt>
+
+#if defined(WIN32)
+
+#undef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 
+#include <windows.h>
+
+#endif 
 
 Napi::String StringFromFontString(Napi::Env env, font_info_string *name)
 {
 	if (name->length == 0 || name->buffer == NULL)
 		return Napi::String::New(env, "");
-	std::string name_string;
+	std::string name_string = "";
 
 #if defined(WIN32)
 	int buffer_length = name->length/2;
-	char16_t* buffer = new char16_t[buffer_length];
-
+	char16_t* buffer_u16 = new char16_t[buffer_length];
 	/* Flip from BE to host order */
 	for (int i = 0; i < buffer_length; ++i) {
-		buffer[i] = be16toh(((uint16_t*)name->buffer)[i]);
+		buffer_u16[i] = be16toh(((uint16_t*)name->buffer)[i]);
 	}
 
-	std::wstring_convert<
-		std::codecvt<char16_t, char, std::mbstate_t>,
-		char16_t> convert;
-	std::u16string u16(buffer, buffer_length);
-	name_string = convert.to_bytes(u16);
-  
-	delete[] buffer;
+    	int buffer_utf8_len = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buffer_u16, buffer_length, NULL, 0, NULL, NULL);
+	if (buffer_utf8_len > 0) {
+		char* buffer_utf8 = new char[buffer_utf8_len+1];
+
+		if (WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buffer_u16, buffer_length, buffer_utf8, buffer_utf8_len, NULL, FALSE) != 0) {
+			name_string = std::string(buffer_utf8, buffer_utf8_len);
+		}
+	
+		delete[] buffer_utf8;
+	}
+	delete[] buffer_u16;
+
 #endif
 #if defined(__APPLE__)
 	name_string = std::string(name->buffer, name->length);
