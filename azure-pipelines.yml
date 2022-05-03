@@ -17,8 +17,7 @@ variables:
 
 jobs:
 - job: 'Windows'
-  pool:
-    vmImage: 'windows-2019'
+  pool: 'Default'
   workspace:
     clean: all
 
@@ -32,15 +31,10 @@ jobs:
   - powershell: git config --global core.autocrlf false
     displayName: 'Set Unix checkout for git'
 
-  - task: NodeTool@0
-    displayName: 'Install Node'
-    inputs:
-      versionSpec: '10.x'
-
   - script: 'yarn install'
     displayName: 'Install dependencies'
 
-  - script: 'cmake -H. -B"%BuildDirectory%" -G"%Generator%"  -DCMAKE_INSTALL_PREFIX="%FullDistributePath%\node-fontinfo" -DNODEJS_NAME=%RuntimeName% -DNODEJS_URL=%RuntimeURL% -DNODEJS_VERSION=%RuntimeVersion%'
+  - script: 'cmake -H. -B"%BuildDirectory%" -G"%Generator%" -A x64 -DCMAKE_INSTALL_PREFIX="%FullDistributePath%\node-fontinfo" -DNODEJS_NAME=%RuntimeName% -DNODEJS_URL=%RuntimeURL% -DNODEJS_VERSION=%RuntimeVersion%'
     displayName: 'Configure node-fontinfo'
 
   - script: 'node ci/bump-version.js'
@@ -88,7 +82,7 @@ jobs:
 
 - job: 'MacOSX'
   pool:
-    vmImage: 'macos-10.15'
+    vmImage: 'macOS-11'
   workspace:
     clean: all
 
@@ -102,7 +96,7 @@ jobs:
   - task: NodeTool@0
     displayName: 'Install Node'
     inputs:
-      versionSpec: '10.x'
+      versionSpec: '14.x'
 
   - script: 'yarn install'
     displayName: 'Install dependencies'
