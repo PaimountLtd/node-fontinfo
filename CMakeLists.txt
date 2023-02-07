@@ -4,24 +4,45 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(node_fontinfo)
 
+if(APPLE)
+	if (NOT CMAKE_OSX_ARCHITECTURES)
+		set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+	endif()
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(freetype2_INSTALL ${CMAKE_BINARY_DIR}/freetype2)
 
-SET(NODEJS_URL "https://atom.io/download/atom-shell" CACHE STRING "Node.JS URL")
+SET(NODEJS_URL "https://artifacts.electronjs.org/headers/dist" CACHE STRING "Node.JS URL")
 SET(NODEJS_NAME "iojs" CACHE STRING "Node.JS Name")
-SET(NODEJS_VERSION "v9.3.3" CACHE STRING "Node.JS Version")
+SET(NODEJS_VERSION "v17.4.11" CACHE STRING "Node.JS Version")
 
 include(NodeJS)
 include(ExternalProject)
 
 nodejs_init()
 
-ExternalProject_Add(
-	freetype2
-	SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/freetype2
-	URL "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${freetype2_INSTALL}
-)
+set(freetype2_URL "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz")
+set(freetype2_SOURCE_DIR "${CMAKE_SOURCE_DIR}/external/freetype2")
+
+if(WIN32)
+	ExternalProject_Add(
+		freetype2
+		SOURCE_DIR ${freetype2_SOURCE_DIR}
+		URL ${freetype2_URL}
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${freetype2_INSTALL}		
+	)
+elseif(APPLE)
+	ExternalProject_Add(
+		freetype2
+		SOURCE_DIR ${freetype2_SOURCE_DIR}
+		URL ${freetype2_URL}
+		CMAKE_ARGS
+			-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
+			-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+			-DCMAKE_INSTALL_PREFIX=${freetype2_INSTALL}
+	)
+endif()
 
 set(freetype2_INCLUDE_DIRS ${freetype2_INSTALL}/include/freetype2)
 IF(WIN32)
