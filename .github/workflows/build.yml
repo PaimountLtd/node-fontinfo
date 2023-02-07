@@ -154,7 +154,7 @@ jobs:
         run: './ci/build-osx.sh'
         env:
           SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
-          CMAKE_OSX_ARCHITECTURES: ${{matrix.arch}}
+          ARCHITECTURE: ${{matrix.arch}}
       - name: Put version into package.json
         if: startsWith(github.ref, 'refs/tags/')
         run: node ./ci/bump-version.js "${{ steps.get_version.outputs.VERSION }}" "${{env.PACKAGE_PATH}}"
